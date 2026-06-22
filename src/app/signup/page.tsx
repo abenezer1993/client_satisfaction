@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -21,19 +21,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { APP_NAME, ROLE_LABELS } from "@/lib/constants";
-import { Loader2 } from "lucide-react";
+import { APP_NAME } from "@/lib/constants";
+import { Loader2, Building2 } from "lucide-react";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("OFFICE_USER");
-  const [organizationName, setOrganizationName] = useState("");
+  const [officeId, setOfficeId] = useState("none");
+  const [offices, setOffices] = useState<any[]>([]);
+  const [loadingOffices, setLoadingOffices] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Fetch available offices for selection
+  useEffect(() => {
+    async function fetchOffices() {
+      try {
+        const res = await fetch("/api/offices");
+        if (res.ok) {
+          const data = await res.json();
+          setOffices(data.filter((o: any) => o.isActive));
+        }
+      } catch (err) {
+        console.error("Failed to load offices:", err);
+      } finally {
+        setLoadingOffices(false);
+      }
+    }
+    fetchOffices();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +67,8 @@ export default function SignUpPage() {
           name,
           email,
           password,
-          role,
+          role: "OFFICE_USER", // Role is always OFFICE_USER on self-signup; admin promotes later
+          officeId: officeId !== "none" ? officeId : null,
         }),
       });
 
@@ -56,15 +76,6 @@ export default function SignUpPage() {
         const data = await res.json();
         setError(data.error || "Failed to create account");
         return;
-      }
-
-      // Create office if GLOBAL_ADMIN and organization name provided
-      if (role === "GLOBAL_ADMIN" && organizationName) {
-        await fetch("/api/offices", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: organizationName }),
-        });
       }
 
       setSuccess(true);
@@ -77,9 +88,7 @@ export default function SignUpPage() {
       });
 
       if (!result?.error) {
-        router.push(
-          role === "GLOBAL_ADMIN" ? "/dashboard/global" : "/dashboard/profile"
-        );
+        router.push("/dashboard/profile");
       }
     } catch {
       setError("An error occurred. Please try again.");
@@ -99,8 +108,11 @@ export default function SignUpPage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Account created!
             </h2>
-            <p className="text-slate-600 mb-6">
+            <p className="text-slate-600 mb-2">
               You&apos;re being signed in automatically...
+            </p>
+            <p className="text-sm text-slate-500 mb-6">
+              Your role will be assigned by your administrator.
             </p>
             <Button asChild variant="outline">
               <Link href="/signin">Sign in manually</Link>
@@ -127,7 +139,7 @@ export default function SignUpPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Create your account</CardTitle>
             <CardDescription>
-              Join and start collecting actionable feedback
+              Sign up to join your department and receive feedback
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -154,7 +166,7 @@ export default function SignUpPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="jane@company.com"
+                  placeholder="jane@nefassilk.edu.et"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -172,41 +184,43 @@ export default function SignUpPage() {
                   required
                   minLength={8}
                 />
-                <p className="text-xs text-slate-400">
-                  At least 8 characters
-                </p>
+                <p className="text-xs text-slate-400">At least 8 characters</p>
               </div>
 
+              {/* Office selection */}
               <div className="space-y-2">
-                <Label>Role</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
+                <Label htmlFor="officeId">
+                  Department / Office{" "}
+                  <span className="text-slate-400 font-normal">(optional)</span>
+                </Label>
+                <Select value={officeId} onValueChange={setOfficeId}>
+                  <SelectTrigger id="officeId">
+                    <SelectValue
+                      placeholder={
+                        loadingOffices
+                          ? "Loading departments..."
+                          : "Select your department..."
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(ROLE_LABELS).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
+                    <SelectItem value="none">
+                      Not assigned yet
+                    </SelectItem>
+                    {offices.map((o: any) => (
+                      <SelectItem key={o.id} value={o.id}>
+                        <span className="flex items-center gap-2">
+                          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                          {o.name}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-slate-400">
+                  Your role within the department will be assigned by an admin.
+                </p>
               </div>
-
-              {role === "GLOBAL_ADMIN" && (
-                <div className="space-y-2">
-                  <Label htmlFor="orgName">
-                    Organization Name{" "}
-                    <span className="text-slate-400">(optional)</span>
-                  </Label>
-                  <Input
-                    id="orgName"
-                    placeholder="Acme Corp"
-                    value={organizationName}
-                    onChange={(e) => setOrganizationName(e.target.value)}
-                  />
-                </div>
-              )}
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
