@@ -1,13 +1,238 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+enum Role {
+  GLOBAL_ADMIN
+  OFFICE_ADMIN
+  OFFICE_USER
+  EXTERNAL
+}
+
+enum FeedbackStatus {
+  NEW
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  NEW_FEEDBACK
+  FEEDBACK_RESPONSE
+  TASK_ASSIGNED
+  TASK_DUE
+  MENTION
+  SYSTEM
+}
+
+model User {
+  id             String           @id @default(cuid())
+  name           String
+  email          String           @unique
+  passwordHash   String?
+  role           Role             @default(OFFICE_USER)
+  avatarUrl      String?
+  isActive       Boolean          @default(true)
+  officeId       String?
+  office         Office?          @relation("OfficeMembers", fields: [officeId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  managedOffice          Office?              @relation("OfficeAdmin")
+  feedbackGiven          Feedback[]           @relation("FeedbackAuthor")
+  feedbackReceived       Feedback[]           @relation("FeedbackTarget")
+  feedbackResponses      FeedbackResponse[]   @relation("ResponseAuthor")
+  assignedTasks          FollowUpTask[]       @relation("TaskAssignee")
+  createdTasks           FollowUpTask[]       @relation("TaskCreator")
+  notifications          Notification[]
+  auditLogs              AuditLog[]
+
+  @@map("users")
+}
+
+model Office {
+  id            String           @id @default(cuid())
+  name          String
+  description   String?
+  isActive      Boolean          @default(true)
+  globalAdminId String?          @unique
+  globalAdmin   User?            @relation("OfficeAdmin", fields: [globalAdminId], references: [id])
+  parentId      String?
+  parent        Office?          @relation("OfficeHierarchy", fields: [parentId], references: [id])
+  children      Office[]         @relation("OfficeHierarchy")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  members       User[]           @relation("OfficeMembers")
+  feedbackGiven Feedback[]       @relation("FeedbackOffice")
+  settings      OfficeSettings?
+  serviceCategories ServiceCategory[]
+  services      Service[]
+  auditLogs     AuditLog[]
+
+  @@map("offices")
+}
+
+model Feedback {
+  id             String           @id @default(cuid())
+  rating         Int
+  comment        String?
+  status         FeedbackStatus  @default(NEW)
+  isAnonymous    Boolean          @default(false)
+  authorId       String?
+  author         User?            @relation("FeedbackAuthor", fields: [authorId], references: [id])
+  targetUserId   String?
+  targetUser     User?            @relation("FeedbackTarget", fields: [targetUserId], references: [id])
+  officeId       String?
+  office         Office?          @relation("FeedbackOffice", fields: [officeId], references: [id])
+  serviceId      String?
+  service        Service?         @relation(fields: [serviceId], references: [id])
+  contactEmail   String?
+  referenceId    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  responses      FeedbackResponse[]
+  followUpTasks  FollowUpTask[]
+  notifications  Notification[]
+
+  @@map("feedback")
+}
+
+model FeedbackResponse {
+  id         String           @id @default(cuid())
+  content    String
+  authorId   String
+  author     User             @relation("ResponseAuthor", fields: [authorId], references: [id])
+  feedbackId String
+  feedback   Feedback         @relation(fields: [feedbackId], references: [id])
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@map("feedback_responses")
+}
+
+model FollowUpTask {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus       @default(PENDING)
+  priority    Int              @default(0)
+  dueDate     DateTime?
+  feedbackId  String?
+  feedback    Feedback?        @relation(fields: [feedbackId], references: [id])
+  assigneeId  String
+  assignee    User             @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creatorId   String
+  creator     User             @relation("TaskCreator", fields: [creatorId], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("follow_up_tasks")
+}
+
+model Notification {
+  id         String             @id @default(cuid())
+  type       NotificationType  @default(SYSTEM)
+  title      String
+  message    String
+  isRead     Boolean            @default(false)
+  link       String?
+  userId     String
+  user       User               @relation(fields: [userId], references: [id])
+  feedbackId String?
+  feedback   Feedback?          @relation(fields: [feedbackId], references: [id])
+  createdAt  DateTime           @default(now())
+
+  @@map("notifications")
+}
+
+model OfficeSettings {
+  id              String          @id @default(cuid())
+  officeId        String          @unique
+  office          Office          @relation(fields: [officeId], references: [id])
+  ratingScaleMin  Int             @default(1)
+  ratingScaleMax  Int             @default(5)
+  allowAnonymous  Boolean         @default(true)
+  allowExternal   Boolean         @default(true)
+  retentionDays   Int             @default(365)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("office_settings")
+}
+
+model GlobalSettings {
+  id              String   @id @default("global")
+  ratingScaleMin  Int      @default(1)
+  ratingScaleMax  Int      @default(5)
+  allowGuestReviews Boolean @default(true)
+  defaultRetentionDays Int  @default(365)
+  requireAuthForInternal Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("global_settings")
+}
+
+model ServiceCategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  officeId    String
+  office      Office   @relation(fields: [officeId], references: [id])
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  services    Service[]
+
+  @@map("service_categories")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  categoryId  String?
+  category    ServiceCategory? @relation(fields: [categoryId], references: [id])
+  officeId    String
+  office      Office   @relation(fields: [officeId], references: [id])
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  feedback    Feedback[]
+
+  @@map("services")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  officeId   String?
+  office     Office?  @relation(fields: [officeId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
 }
