@@ -82,6 +82,10 @@ export async function GET(request: Request) {
     );
     const recentFeedback = feedback.filter((f: FeedbackRecord) => f.createdAt >= midPoint);
     const olderFeedback = feedback.filter((f: FeedbackRecord) => f.createdAt < midPoint);
+
+    // Convert 1-5 scale to percentage (0-100%)
+    const toPercent = (val: number) => Math.round(val * 20 * 10) / 10;
+
     const recentAvg =
       recentFeedback.length > 0
         ? recentFeedback.reduce((s: number, f: FeedbackRecord) => s + f.rating, 0) / recentFeedback.length
@@ -104,12 +108,12 @@ export async function GET(request: Request) {
       .sort(([a]: [string, TrendEntry], [b]: [string, TrendEntry]) => a.localeCompare(b))
       .map(([date, entry]: [string, TrendEntry]) => ({
         date,
-        average: Math.round((entry.total / entry.count) * 10) / 10,
+        average: toPercent(entry.total / entry.count),
         count: entry.count,
       }));
 
     const distributionData = ratingDistribution.map((count: number, i: number) => ({
-      rating: `${i + 1} Star`,
+      rating: `${(i + 1) * 20}%`,
       count,
       percentage:
         totalFeedback > 0 ? Math.round((count / totalFeedback) * 100) : 0,
@@ -117,13 +121,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       totalFeedback,
-      averageRating: Math.round(averageRating * 10) / 10,
+      averageRating: toPercent(averageRating),
       ratingDistribution: distributionData,
       trendData,
-      recentAvg: Math.round(recentAvg * 10) / 10,
-      olderAvg: Math.round(olderAvg * 10) / 10,
+      recentAvg: toPercent(recentAvg),
+      olderAvg: toPercent(olderAvg),
       trend:
-        recentAvg > olderAvg ? "up" : recentAvg < olderAvg ? "down" : "neutral",
+        toPercent(recentAvg) > toPercent(olderAvg) ? "up" : toPercent(recentAvg) < toPercent(olderAvg) ? "down" : "neutral",
       resolvedCount: feedback.filter((f: FeedbackRecord) => f.status === "RESOLVED").length,
       openCount: feedback.filter((f: FeedbackRecord) => f.status !== "RESOLVED").length,
     });

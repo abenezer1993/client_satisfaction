@@ -54,7 +54,7 @@ export function RatingStars({
       </div>
       {showValue && (
         <span className="ml-2 text-sm font-medium text-slate-600">
-          {rating.toFixed(1)}
+          {Math.round(rating * 20)}%
         </span>
       )}
     </div>

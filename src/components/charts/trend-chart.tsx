@@ -38,11 +38,12 @@ export function TrendChart({ data, title }: TrendChartProps) {
               tickLine={false}
             />
             <YAxis
-              domain={[1, 5]}
-              ticks={[1, 2, 3, 4, 5]}
+              domain={[0, 100]}
+              ticks={[0, 20, 40, 60, 80, 100]}
               tick={{ fontSize: 11, fill: "#94a3b8" }}
               axisLine={{ stroke: "#e2e8f0" }}
               tickLine={false}
+              tickFormatter={(value) => `${value}%`}
             />
             <Tooltip
               contentStyle={{
@@ -51,6 +52,15 @@ export function TrendChart({ data, title }: TrendChartProps) {
                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 fontSize: "12px",
               }}
+            />
+            <Tooltip
+              contentStyle={{
+                borderRadius: "8px",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                fontSize: "12px",
+              }}
+              formatter={(value: any) => [`${value}%`, "Average Rating"]}
             />
             <Line
               type="monotone"

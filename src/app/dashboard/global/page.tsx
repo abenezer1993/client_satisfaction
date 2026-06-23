@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { TrendChart } from "@/components/charts/trend-chart";
 import { DistributionChart } from "@/components/charts/distribution-chart";
+import { BestPerformersCard } from "@/components/charts/best-performers-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Star, MessageSquare } from "lucide-react";
 
@@ -76,12 +77,12 @@ export default function GlobalAdminDashboard() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Overall Rating"
-          value={analytics?.averageRating.toFixed(1) || "0.0"}
+          value={analytics ? `${Math.round(analytics.averageRating)}%` : "0%"}
           icon={Star}
           trend={analytics?.trend}
           trendValue={
             analytics
-              ? `${analytics.recentAvg.toFixed(1)} vs ${analytics.olderAvg.toFixed(1)}`
+              ? `${Math.round(analytics.recentAvg)}% vs ${Math.round(analytics.olderAvg)}%`
               : ""
           }
           color="blue"
@@ -114,8 +115,9 @@ export default function GlobalAdminDashboard() {
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      {/* Charts + Best Performers */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 grid lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Rating Trend</CardTitle>
@@ -138,6 +140,8 @@ export default function GlobalAdminDashboard() {
             />
           </CardContent>
         </Card>
+        </div>
+        <BestPerformersCard title="Top Performers" limit={5} />
       </div>
 
       {/* Offices List */}

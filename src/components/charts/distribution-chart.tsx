@@ -52,7 +52,7 @@ export function DistributionChart({ data, title }: DistributionChartProps) {
                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 fontSize: "12px",
               }}
-              formatter={(value: any) => [`${value} ratings`, "Count"]}
+              formatter={(value: any, name: any, props: any) => [`${value} ratings (${props.payload.percentage}%)`, "Count"]}
             />
             <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={40}>
               {data.map((_, index) => (

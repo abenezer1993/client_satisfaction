@@ -66,7 +66,7 @@ export default function ProfileDashboardPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="My Average Rating"
-          value={analytics?.averageRating?.toFixed(1) || "0.0"}
+          value={analytics ? `${Math.round(analytics.averageRating)}%` : "0%"}
           icon={Star}
           trend={analytics?.trend}
           trendValue={analytics?.trend === "up" ? "Improving" : "Declining"}
@@ -79,8 +79,8 @@ export default function ProfileDashboardPage() {
           color="teal"
         />
         <KpiCard
-          title="Trend"
-          value={analytics?.recentAvg?.toFixed(1) || "0.0"}
+          title="Recent Rating"
+          value={analytics ? `${Math.round(analytics.recentAvg)}%` : "0%"}
           icon={TrendingUp}
           trend={analytics?.trend}
           trendValue="Recent period"

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
+import { BestPerformersCard } from "@/components/charts/best-performers-card";
 import {
   ChevronRight,
   Star,
@@ -15,6 +16,7 @@ import {
   MessageSquare,
   ExternalLink,
   X,
+  Trophy,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -260,6 +262,32 @@ export default function LandingPage() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Top Performers Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-medium mb-4">
+              <Trophy className="h-3.5 w-3.5" />
+              Leaderboard
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              Top Performers This Month
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              See who's delivering the best client satisfaction across all offices.
+              Rankings update in real-time based on feedback received.
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <BestPerformersCard
+              title=""
+              limit={5}
+              className="border-2 border-amber-100 shadow-lg"
+            />
           </div>
         </div>
       </section>

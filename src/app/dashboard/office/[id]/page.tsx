@@ -4,6 +4,7 @@ import { useEffect, useState, use, useCallback } from "react";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { TrendChart } from "@/components/charts/trend-chart";
 import { DistributionChart } from "@/components/charts/distribution-chart";
+import { BestPerformersCard } from "@/components/charts/best-performers-card";
 import { FeedbackCard } from "@/components/feedback/feedback-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -133,12 +134,12 @@ export default function OfficeDashboardPage({
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <KpiCard
               title="Office Rating"
-              value={analytics?.averageRating?.toFixed(1) || "0.0"}
+              value={analytics ? `${Math.round(analytics.averageRating)}%` : "0%"}
               icon={Star}
               trend={analytics?.trend}
               trendValue={
                 analytics
-                  ? `${analytics.recentAvg?.toFixed(1)} vs ${analytics.olderAvg?.toFixed(1)}`
+                  ? `${Math.round(analytics.recentAvg)}% vs ${Math.round(analytics.olderAvg)}%`
                   : ""
               }
               color="blue"
@@ -167,29 +168,32 @@ export default function OfficeDashboardPage({
             />
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Rating Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TrendChart
-                  data={analytics?.trendData || []}
-                  title="30-day trend"
-                />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DistributionChart
-                  data={analytics?.ratingDistribution || []}
-                  title="Rating distribution"
-                />
-              </CardContent>
-            </Card>
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 grid lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Rating Trend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TrendChart
+                    data={analytics?.trendData || []}
+                    title="30-day trend"
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DistributionChart
+                    data={analytics?.ratingDistribution || []}
+                    title="Rating distribution"
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            <BestPerformersCard title="Top Performers" officeId={id} limit={5} />
           </div>
         </TabsContent>
 

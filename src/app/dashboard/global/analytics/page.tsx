@@ -23,7 +23,7 @@ export default function GlobalAnalyticsPage() {
       <p className="text-sm text-slate-500">Deep dive into organization-wide metrics</p>
 
       <div className="grid gap-6 sm:grid-cols-3">
-        <KpiCard title="Average Rating" value={analytics?.averageRating?.toFixed(1) || "—"} icon={Star} color="blue" />
+        <KpiCard title="Average Rating" value={analytics ? `${Math.round(analytics.averageRating)}%` : "—"} icon={Star} color="blue" />
         <KpiCard title="Total Feedback" value={analytics?.totalFeedback || 0} icon={MessageSquare} color="teal" />
         <KpiCard title="Resolution Rate" value={analytics ? `${Math.round((analytics.resolvedCount / analytics.totalFeedback) * 100)}%` : "—"} icon={BarChart3} color="amber" />
       </div>
