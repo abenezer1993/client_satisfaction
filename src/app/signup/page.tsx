@@ -78,18 +78,29 @@ export default function SignUpPage() {
         return;
       }
 
-      setSuccess(true);
+      // Small delay to ensure session cookie is ready before redirect
+      await new Promise((r) => setTimeout(r, 500));
 
-      // Auto sign in
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      try {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
 
-      if (!result?.error) {
-        router.push("/dashboard/profile");
+        if (!result?.error) {
+          // Use full page navigation instead of client-side router.push
+          // to ensure session cookie is picked up fresh by the server
+          window.location.href = "/dashboard/profile";
+          return; // Don't set success — we're navigating away
+        }
+      } catch {
+        // Auto sign-in failed silently — user can click "Sign in manually"
+        console.error("Auto sign-in failed:");
       }
+
+      // If we get here, auto sign-in didn't succeed — show success message
+      setSuccess(true);
     } catch {
       setError("An error occurred. Please try again.");
     } finally {
