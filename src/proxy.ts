@@ -3,24 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const method = req.method;
 
-  // Allow guest feedback submission
-  if (pathname === "/api/feedback" && req.method === "POST") {
-    return NextResponse.next();
-  }
+  // Allow unauthenticated access to specific routes
+  const isPublic =
+    (pathname === "/api/feedback" && method === "POST") ||
+    (pathname === "/api/users" && method === "GET") ||
+    (pathname === "/api/users" && method === "POST") || // Sign-up
+    (pathname === "/api/offices" && method === "GET") ||
+    (pathname === "/api/services" && method === "GET");
 
-  // Allow guest fetching users list
-  if (pathname === "/api/users" && req.method === "GET") {
-    return NextResponse.next();
-  }
-
-  // Allow guest fetching offices list
-  if (pathname === "/api/offices" && req.method === "GET") {
-    return NextResponse.next();
-  }
-
-  // Allow guest fetching services list
-  if (pathname === "/api/services" && req.method === "GET") {
+  if (isPublic) {
     return NextResponse.next();
   }
 
