@@ -45,12 +45,12 @@ export default function LandingPage() {
               >
                 How it Works
               </a>
-              <a
+              <Link
                 href="/help"
                 className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
               >
                 Help
-              </a>
+              </Link>
             </nav>
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" asChild>

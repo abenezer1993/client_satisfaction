@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/lib/constants";
+import Link from "next/link";
 import {
   Search,
   HelpCircle,
@@ -45,73 +46,81 @@ export default function HelpPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6 mb-12">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center mb-2">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-              </div>
-              <CardTitle className="text-base">Getting Started</CardTitle>
-              <CardDescription>
-                Set up your organization and configure your hierarchy
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="text-sm text-blue-600 font-medium flex items-center">
-                View guides <ChevronRight className="h-4 w-4 ml-1" />
-              </span>
-            </CardContent>
-          </Card>
+          <Link href="/signup" className="block">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center mb-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                </div>
+                <CardTitle className="text-base">Getting Started</CardTitle>
+                <CardDescription>
+                  Set up your organization and configure your hierarchy
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <span className="text-sm text-blue-600 font-medium flex items-center">
+                  View guides <ChevronRight className="h-4 w-4 ml-1" />
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="h-10 w-10 rounded-lg bg-teal-50 flex items-center justify-center mb-2">
-                <HelpCircle className="h-5 w-5 text-teal-600" />
-              </div>
-              <CardTitle className="text-base">FAQs</CardTitle>
-              <CardDescription>
-                Answers to common questions about using the platform
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="text-sm text-teal-600 font-medium flex items-center">
-                Browse FAQs <ChevronRight className="h-4 w-4 ml-1" />
-              </span>
-            </CardContent>
-          </Card>
+          <Link href="/help" className="block">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="h-10 w-10 rounded-lg bg-teal-50 flex items-center justify-center mb-2">
+                  <HelpCircle className="h-5 w-5 text-teal-600" />
+                </div>
+                <CardTitle className="text-base">FAQs</CardTitle>
+                <CardDescription>
+                  Answers to common questions about using the platform
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <span className="text-sm text-teal-600 font-medium flex items-center">
+                  Browse FAQs <ChevronRight className="h-4 w-4 ml-1" />
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="h-10 w-10 rounded-lg bg-amber-50 flex items-center justify-center mb-2">
-                <MessageCircle className="h-5 w-5 text-amber-600" />
-              </div>
-              <CardTitle className="text-base">Feedback Guide</CardTitle>
-              <CardDescription>
-                Learn how to give and manage feedback effectively
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="text-sm text-amber-600 font-medium flex items-center">
-                Learn more <ChevronRight className="h-4 w-4 ml-1" />
-              </span>
-            </CardContent>
-          </Card>
+          <Link href="/dashboard/feedback" className="block">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="h-10 w-10 rounded-lg bg-amber-50 flex items-center justify-center mb-2">
+                  <MessageCircle className="h-5 w-5 text-amber-600" />
+                </div>
+                <CardTitle className="text-base">Feedback Guide</CardTitle>
+                <CardDescription>
+                  Learn how to give and manage feedback effectively
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <span className="text-sm text-amber-600 font-medium flex items-center">
+                  Learn more <ChevronRight className="h-4 w-4 ml-1" />
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="h-10 w-10 rounded-lg bg-slate-50 flex items-center justify-center mb-2">
-                <Mail className="h-5 w-5 text-slate-600" />
-              </div>
-              <CardTitle className="text-base">Contact Support</CardTitle>
-              <CardDescription>
-                Get in touch with our support team for help
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="text-sm text-slate-600 font-medium flex items-center">
-                Contact us <ChevronRight className="h-4 w-4 ml-1" />
-              </span>
-            </CardContent>
-          </Card>
+          <a href="mailto:support@nefassilk.edu.et" className="block">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="h-10 w-10 rounded-lg bg-slate-50 flex items-center justify-center mb-2">
+                  <Mail className="h-5 w-5 text-slate-600" />
+                </div>
+                <CardTitle className="text-base">Contact Support</CardTitle>
+                <CardDescription>
+                  Get in touch with our support team for help
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <span className="text-sm text-slate-600 font-medium flex items-center">
+                  Contact us <ChevronRight className="h-4 w-4 ml-1" />
+                </span>
+              </CardContent>
+            </Card>
+          </a>
         </div>
 
         <Card>

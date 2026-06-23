@@ -93,9 +93,9 @@ export default function OfficeDashboardPage({
 
   if (loading) {
     return (
-      <div className="p-6 animate-fade-in">
+      <div className="py-6 animate-fade-in">
         <div className="h-8 w-48 bg-slate-200 rounded animate-pulse mb-6" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 px-6">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -111,8 +111,8 @@ export default function OfficeDashboardPage({
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      <div>
+    <div className="py-6 space-y-6 animate-fade-in">
+      <div className="px-6">
         <h2 className="text-2xl font-bold text-slate-900">
           {office?.name || "Office Dashboard"}
         </h2>
@@ -168,33 +168,33 @@ export default function OfficeDashboardPage({
             />
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 grid lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Rating Trend</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <TrendChart
-                    data={analytics?.trendData || []}
-                    title="30-day trend"
-                  />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DistributionChart
-                    data={analytics?.ratingDistribution || []}
-                    title="Rating distribution"
-                  />
-                </CardContent>
-              </Card>
-            </div>
-            <BestPerformersCard title="Top Performers" officeId={id} limit={5} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Rating Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TrendChart
+                  data={analytics?.trendData || []}
+                  title="30-day trend"
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DistributionChart
+                  data={analytics?.ratingDistribution || []}
+                  title="Rating distribution"
+                />
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Top Performers — full width */}
+          <BestPerformersCard title="Top Performers" officeId={id} limit={10} />
         </TabsContent>
 
         <TabsContent value="users">

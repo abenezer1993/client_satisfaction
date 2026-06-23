@@ -46,8 +46,16 @@ export default function GlobalAdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6 animate-fade-in">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="py-6 space-y-6 animate-fade-in">
+        <div className="px-6">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Global Dashboard
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Organization-wide overview and performance metrics
+          </p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 px-6">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -63,8 +71,8 @@ export default function GlobalAdminDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      <div>
+    <div className="py-6 space-y-6 animate-fade-in">
+      <div className="px-6">
         <h2 className="text-2xl font-bold text-slate-900">
           Global Dashboard
         </h2>
@@ -115,9 +123,8 @@ export default function GlobalAdminDashboard() {
         />
       </div>
 
-      {/* Charts + Best Performers */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 grid lg:grid-cols-2 gap-6">
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Rating Trend</CardTitle>
@@ -140,9 +147,10 @@ export default function GlobalAdminDashboard() {
             />
           </CardContent>
         </Card>
-        </div>
-        <BestPerformersCard title="Top Performers" limit={5} />
       </div>
+
+      {/* Top Performers — full width */}
+      <BestPerformersCard title="Top Performers" limit={10} />
 
       {/* Offices List */}
       <Card>
