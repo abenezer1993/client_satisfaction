@@ -15,7 +15,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { APP_NAME } from "@/lib/constants";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Clock } from "lucide-react";
+
+interface PendingState {
+  isPending: boolean;
+  name: string;
+}
 
 export default function SignInPage() {
   const router = useRouter();
@@ -23,14 +28,28 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [pending, setPending] = useState<PendingState | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setPending(null);
 
     try {
+      // First, check if the user exists and is pending approval
+      const checkRes = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
+      if (checkRes.ok) {
+        const users = await checkRes.json();
+        const found = users[0];
+        if (found && !found.isActive) {
+          setPending({ isPending: true, name: found.name });
+          return;
+        }
+      }
+
+      // Proceed with normal sign-in
       const result = await signIn("credentials", {
         email,
         password,
@@ -38,6 +57,7 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
+        // Could be invalid credentials or inactive account (checked above)
         setError("Invalid email or password");
         return;
       }
@@ -88,6 +108,22 @@ export default function SignInPage() {
               {error && (
                 <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 border border-red-200">
                   {error}
+                </div>
+              )}
+
+              {pending && (
+                <div className="bg-amber-50 text-amber-800 text-sm rounded-lg p-4 border border-amber-200">
+                  <div className="flex items-start gap-3">
+                    <Clock className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-medium mb-1">Account pending approval</p>
+                      <p className="text-amber-700">
+                        <strong>{pending.name}</strong>, your account has been created but is
+                        still waiting for an administrator to approve it.
+                        You&apos;ll receive access once approved.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 

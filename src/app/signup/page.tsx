@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { APP_NAME } from "@/lib/constants";
-import { Loader2, Building2 } from "lucide-react";
+import { Loader2, Building2, Clock, Mail } from "lucide-react";
 
 export default function SignUpPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,8 +64,9 @@ export default function SignUpPage() {
           name,
           email,
           password,
-          role: "OFFICE_USER", // Role is always OFFICE_USER on self-signup; admin promotes later
+          role: "OFFICE_USER",
           officeId: officeId !== "none" ? officeId : null,
+          isActive: false, // New users require admin approval
         }),
       });
 
@@ -78,28 +76,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // Small delay to ensure session cookie is ready before redirect
-      await new Promise((r) => setTimeout(r, 500));
-
-      try {
-        const result = await signIn("credentials", {
-          email,
-          password,
-          redirect: false,
-        });
-
-        if (!result?.error) {
-          // Use full page navigation instead of client-side router.push
-          // to ensure session cookie is picked up fresh by the server
-          window.location.href = "/dashboard/profile";
-          return; // Don't set success — we're navigating away
-        }
-      } catch {
-        // Auto sign-in failed silently — user can click "Sign in manually"
-        console.error("Auto sign-in failed:");
-      }
-
-      // If we get here, auto sign-in didn't succeed — show success message
       setSuccess(true);
     } catch {
       setError("An error occurred. Please try again.");
@@ -113,20 +89,27 @@ export default function SignUpPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
           <CardContent className="pt-12 pb-10">
-            <div className="rounded-full bg-emerald-50 w-16 h-16 flex items-center justify-center mx-auto mb-6">
-              <span className="text-3xl">✓</span>
+            <div className="rounded-full bg-amber-50 w-16 h-16 flex items-center justify-center mx-auto mb-6">
+              <Clock className="h-8 w-8 text-amber-600" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
-              Account created!
+              Registration submitted!
             </h2>
-            <p className="text-slate-600 mb-2">
-              You&apos;re being signed in automatically...
+            <p className="text-slate-600 mb-4">
+              Your account is pending approval by an administrator.
             </p>
-            <p className="text-sm text-slate-500 mb-6">
-              Your role will be assigned by your administrator.
-            </p>
+            <div className="bg-slate-50 rounded-lg p-4 mb-6 text-left text-sm text-slate-600 space-y-2">
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                <span>You&apos;ll receive access once an admin approves your account.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Mail className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                <span>Check your email or contact your administrator for updates.</span>
+              </div>
+            </div>
             <Button asChild variant="outline">
-              <Link href="/signin">Sign in manually</Link>
+              <Link href="/signin">Back to sign in</Link>
             </Button>
           </CardContent>
         </Card>
@@ -231,6 +214,11 @@ export default function SignUpPage() {
                 <p className="text-xs text-slate-400">
                   Your role within the department will be assigned by an admin.
                 </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700">
+                <Clock className="h-3.5 w-3.5 inline mr-1" />
+                After signing up, an administrator must approve your account before you can sign in.
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

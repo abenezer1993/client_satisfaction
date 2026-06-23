@@ -25,6 +25,10 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // New self-sign-ups require admin approval (isActive: false).
+    // Admin-created users can be set active immediately by passing isActive: true.
+    const isActive = body.isActive !== undefined ? body.isActive : true;
+
     const user = await prisma.user.create({
       data: {
         name,
@@ -32,6 +36,7 @@ export async function POST(request: Request) {
         passwordHash,
         role: role || "OFFICE_USER",
         officeId: officeId || null,
+        isActive,
       },
       select: {
         id: true,
@@ -39,6 +44,7 @@ export async function POST(request: Request) {
         email: true,
         role: true,
         officeId: true,
+        isActive: true,
         createdAt: true,
       },
     });
@@ -58,10 +64,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const officeId = searchParams.get("officeId");
     const role = searchParams.get("role");
+    const email = searchParams.get("email");
 
     const where: any = {};
     if (officeId) where.officeId = officeId;
     if (role) where.role = role;
+    if (email) where.email = email;
 
     const users = await prisma.user.findMany({
       where,
