@@ -18,7 +18,7 @@ export async function proxy(req: NextRequest) {
   }
 
   // Check authentication for protected routes
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
   if (!token) {
     const signInUrl = new URL("/signin", req.url);
