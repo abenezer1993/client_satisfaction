@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -22,14 +22,52 @@ interface PendingState {
   name: string;
 }
 
+const ERROR_MESSAGES: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password. Please try again.",
+  OAuthSignin: "There was a problem signing in. Please try again.",
+  OAuthCallback: "There was a problem signing in. Please try again.",
+  OAuthCreateAccount: "Could not create your account. Please try again.",
+  EmailCreateAccount: "Could not create your account. Please try again.",
+  Callback: "There was a problem with the sign-in callback.",
+  OAuthAccountNotLinked: "This email is already associated with another sign-in method.",
+  SessionRequired: "Please sign in to access this page.",
+  Default: "An unexpected error occurred. Please try again.",
+};
+
 export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
+  );
+}
+
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState<PendingState | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Check for error from URL (set by NextAuth redirect or middleware)
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam === "CredentialsSignin") {
+        const code = searchParams.get("code");
+        if (code === "credentials") {
+          setError("Invalid email or password. Check your credentials and try again.");
+        } else {
+          setError(ERROR_MESSAGES[errorParam]);
+        }
+      } else {
+        setError(ERROR_MESSAGES[errorParam] || ERROR_MESSAGES.Default);
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +95,7 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        // Could be invalid credentials or inactive account (checked above)
-        setError("Invalid email or password");
+        setError(ERROR_MESSAGES[result.error] || ERROR_MESSAGES.Default);
         return;
       }
 
@@ -77,8 +114,8 @@ export default function SignInPage() {
       } else {
         router.push("/dashboard/profile");
       }
-    } catch {
-      setError("An error occurred. Please try again.");
+    } catch (err: any) {
+      setError(err?.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
