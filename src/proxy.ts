@@ -7,6 +7,7 @@ export async function proxy(req: NextRequest) {
 
   // Allow unauthenticated access to public routes
   const isPublic =
+    pathname === "/api/seed" ||
     (pathname === "/api/feedback" && method === "POST") ||
     (pathname === "/api/users" && method === "GET") ||
     (pathname === "/api/users" && method === "POST") ||
@@ -37,5 +38,6 @@ export const config = {
     "/api/offices/:path*",
     "/api/analytics/:path*",
     "/api/services/:path*",
+    "/api/seed",
   ],
 };
