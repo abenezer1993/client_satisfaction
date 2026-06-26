@@ -5,11 +5,11 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const method = req.method;
 
-  // Allow unauthenticated access to specific routes
+  // Allow unauthenticated access to public routes
   const isPublic =
     (pathname === "/api/feedback" && method === "POST") ||
     (pathname === "/api/users" && method === "GET") ||
-    (pathname === "/api/users" && method === "POST") || // Sign-up
+    (pathname === "/api/users" && method === "POST") ||
     (pathname === "/api/offices" && method === "GET") ||
     (pathname === "/api/services" && method === "GET");
 
@@ -36,5 +36,6 @@ export const config = {
     "/api/users/:path*",
     "/api/offices/:path*",
     "/api/analytics/:path*",
+    "/api/services/:path*",
   ],
 };
