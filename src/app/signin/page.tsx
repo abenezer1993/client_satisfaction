@@ -6,15 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { APP_NAME } from "@/lib/constants";
-import { Eye, EyeOff, Loader2, Clock } from "lucide-react";
+import AuthLayout from "@/components/auth/auth-layout";
+import { Eye, EyeOff, Loader2, Clock, AlertCircle } from "lucide-react";
 
 export default function SignInPage() {
   return (
@@ -89,109 +82,119 @@ function SignInForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex flex-col items-center gap-3">
-            <img src="/logo.jpg" alt="Logo" className="h-16 w-16 object-contain rounded-md" />
-            <span className="text-xl font-bold text-slate-900 leading-tight text-center max-w-[280px]">
-              {APP_NAME}
-            </span>
-          </Link>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to your account to continue"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="animate-scale-in bg-red-50 text-red-700 text-sm rounded-xl p-4 border border-red-200 flex items-start gap-3">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {pending && (
+          <div className="animate-scale-in bg-amber-50 text-amber-800 text-sm rounded-xl p-4 border border-amber-200">
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium mb-1">Account pending approval</p>
+                <p className="text-amber-700">
+                  <strong>{pending.name}</strong>, your account has been created
+                  but is still waiting for an administrator to approve it.
+                  You&apos;ll receive access once approved.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium text-slate-700">
+            Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-11 px-4 rounded-xl border-slate-300 bg-white text-sm transition-all duration-200 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          />
         </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>
-              Sign in to your account to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 border border-red-200">
-                  {error}
-                </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+              Password
+            </Label>
+            <button
+              type="button"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              Forgot password?
+            </button>
+          </div>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="h-11 px-4 rounded-xl border-slate-300 bg-white text-sm transition-all duration-200 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 pr-11"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
               )}
+            </button>
+          </div>
+        </div>
 
-              {pending && (
-                <div className="bg-amber-50 text-amber-800 text-sm rounded-lg p-4 border border-amber-200">
-                  <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium mb-1">Account pending approval</p>
-                      <p className="text-amber-700">
-                        <strong>{pending.name}</strong>, your account has been created but is
-                        still waiting for an administrator to approve it.
-                        You&apos;ll receive access once approved.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+        <Button
+          type="submit"
+          className="w-full h-11 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 transition-all duration-200"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Signing in...
+            </>
+          ) : (
+            "Sign in"
+          )}
+        </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-slate-50 px-3 text-slate-400">or</span>
+          </div>
+        </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign in"
-                )}
-              </Button>
-
-              <p className="text-center text-sm text-slate-500">
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/signup"
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Sign up
-                </Link>
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <p className="text-center text-sm text-slate-500">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/signup"
+            className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+          >
+            Create one
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
 }
