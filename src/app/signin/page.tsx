@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,23 +15,6 @@ import {
 } from "@/components/ui/card";
 import { APP_NAME } from "@/lib/constants";
 import { Eye, EyeOff, Loader2, Clock } from "lucide-react";
-
-interface PendingState {
-  isPending: boolean;
-  name: string;
-}
-
-const ERROR_MESSAGES: Record<string, string> = {
-  CredentialsSignin: "Invalid email or password. Please try again.",
-  OAuthSignin: "There was a problem signing in. Please try again.",
-  OAuthCallback: "There was a problem signing in. Please try again.",
-  OAuthCreateAccount: "Could not create your account. Please try again.",
-  EmailCreateAccount: "Could not create your account. Please try again.",
-  Callback: "There was a problem with the sign-in callback.",
-  OAuthAccountNotLinked: "This email is already associated with another sign-in method.",
-  SessionRequired: "Please sign in to access this page.",
-  Default: "An unexpected error occurred. Please try again.",
-};
 
 export default function SignInPage() {
   return (
@@ -49,23 +31,16 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [pending, setPending] = useState<PendingState | null>(null);
+  const [pending, setPending] = useState<{ name: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Check for error from URL (set by NextAuth redirect or middleware)
+  // Check for error or callbackUrl from URL
   useEffect(() => {
     const errorParam = searchParams.get("error");
-    if (errorParam) {
-      if (errorParam === "CredentialsSignin") {
-        const code = searchParams.get("code");
-        if (code === "credentials") {
-          setError("Invalid email or password. Check your credentials and try again.");
-        } else {
-          setError(ERROR_MESSAGES[errorParam]);
-        }
-      } else {
-        setError(ERROR_MESSAGES[errorParam] || ERROR_MESSAGES.Default);
-      }
+    if (errorParam === "CredentialsSignin") {
+      setError("Invalid email or password. Please try again.");
+    } else if (errorParam) {
+      setError("An error occurred during sign in. Please try again.");
     }
   }, [searchParams]);
 
@@ -76,46 +51,38 @@ function SignInForm() {
     setPending(null);
 
     try {
-      // First, check if the user exists and is pending approval
-      const checkRes = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
-      if (checkRes.ok) {
-        const users = await checkRes.json();
-        const found = users[0];
-        if (found && !found.isActive) {
-          setPending({ isPending: true, name: found.name });
-          return;
-        }
-      }
-
-      // Proceed with normal sign-in
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (result?.error) {
-        setError(ERROR_MESSAGES[result.error] || ERROR_MESSAGES.Default);
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 403 && data.code === "PENDING_APPROVAL") {
+          setPending({ name: data.name || "Your account" });
+          return;
+        }
+        setError(data.error || "Invalid email or password");
         return;
       }
 
-      // Fetch session to determine redirect
-      const sessionRes = await fetch("/api/auth/session");
-      const session = await sessionRes.json();
+      // Successful login - redirect based on role
+      const user = data.user;
+      const callbackUrl = searchParams.get("callbackUrl");
 
-      if (session?.user) {
-        const role = (session.user as any).role;
-        const officeId = (session.user as any).officeId;
-
-        if (role === "GLOBAL_ADMIN") router.push("/dashboard/global");
-        else if (role === "OFFICE_ADMIN" && officeId)
-          router.push(`/dashboard/office/${officeId}`);
-        else router.push("/dashboard/profile");
+      if (callbackUrl && callbackUrl.startsWith("/")) {
+        router.push(callbackUrl);
+      } else if (user.role === "GLOBAL_ADMIN") {
+        router.push("/dashboard/global");
+      } else if (user.role === "OFFICE_ADMIN" && user.officeId) {
+        router.push(`/dashboard/office/${user.officeId}`);
       } else {
         router.push("/dashboard/profile");
       }
-    } catch (err: any) {
-      setError(err?.message || "An error occurred. Please try again.");
+    } catch {
+      setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

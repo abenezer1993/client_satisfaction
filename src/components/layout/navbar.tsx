@@ -87,7 +87,7 @@ export function Navbar({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/api/auth/signout" className="cursor-pointer text-red-600">
+              <Link href="/api/auth/logout" className="cursor-pointer text-red-600">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out
               </Link>
