@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 async function authorizeAdmin(session: any) {
   if (!session?.user) {
@@ -24,18 +25,58 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { isActive } = body;
 
-    if (typeof isActive !== "boolean") {
+    // Build update data from allowed fields
+    const updateData: Record<string, any> = {};
+
+    if (typeof body.isActive === "boolean") {
+      updateData.isActive = body.isActive;
+    }
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
+    if (body.email !== undefined) {
+      // Check email uniqueness if changing
+      if (body.email !== body._currentEmail) {
+        const existing = await prisma.user.findUnique({
+          where: { email: body.email },
+        });
+        if (existing && existing.id !== id) {
+          return NextResponse.json(
+            { error: "Email already in use" },
+            { status: 409 }
+          );
+        }
+      }
+      updateData.email = body.email;
+    }
+    if (body.role !== undefined) {
+      const validRoles = ["GLOBAL_ADMIN", "OFFICE_ADMIN", "OFFICE_USER", "EXTERNAL"];
+      if (!validRoles.includes(body.role)) {
+        return NextResponse.json(
+          { error: "Invalid role" },
+          { status: 400 }
+        );
+      }
+      updateData.role = body.role;
+    }
+    if (body.officeId !== undefined) {
+      updateData.officeId = body.officeId || null;
+    }
+    if (body.password !== undefined && body.password) {
+      updateData.passwordHash = await bcrypt.hash(body.password, 12);
+    }
+
+    if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
-        { error: "isActive must be a boolean" },
+        { error: "No valid fields to update" },
         { status: 400 }
       );
     }
 
     const user = await prisma.user.update({
       where: { id },
-      data: { isActive },
+      data: updateData,
       select: {
         id: true,
         name: true,
@@ -43,6 +84,7 @@ export async function PATCH(
         role: true,
         isActive: true,
         officeId: true,
+        office: { select: { name: true } },
         createdAt: true,
       },
     });
