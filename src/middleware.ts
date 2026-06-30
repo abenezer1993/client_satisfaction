@@ -20,6 +20,7 @@ const publicRoutes = [
 const publicApiRoutes = [
   "/api/auth/login",
   "/api/auth/logout",
+  "/api/auth/me",
   "/api/users",
   "/api/offices",
   "/api/services",

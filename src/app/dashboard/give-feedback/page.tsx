@@ -89,22 +89,28 @@ export default function GiveFeedbackPage() {
     const load = async () => {
       try {
         const [sessionRes, officesRes] = await Promise.all([
-          fetch("/api/auth/session"),
+          fetch("/api/auth/me"),
           fetch("/api/offices"),
         ]);
-        const sessionData: SessionUser = await sessionRes.json();
+        const sessionData = await sessionRes.json();
         const officesData: Office[] = await officesRes.json();
 
-        setSession(sessionData);
-        setOffices(officesData);
+        const userData: SessionUser | null = sessionData?.user ?? sessionData;
 
-        // Non-global-admins skip office selection — auto-select their office
-        if (sessionData?.role !== "GLOBAL_ADMIN" && sessionData?.officeId) {
-          const userOffice = officesData.find((o) => o.id === sessionData.officeId);
-          if (userOffice) {
-            setSelectedOffice(userOffice);
-            setStep("select-user");
+        if (userData?.id) {
+          setSession(userData);
+          setOffices(officesData);
+
+          // Non-global-admins skip office selection — auto-select their office
+          if (userData.role !== "GLOBAL_ADMIN" && userData.officeId) {
+            const userOffice = officesData.find((o) => o.id === userData.officeId);
+            if (userOffice) {
+              setSelectedOffice(userOffice);
+              setStep("select-user");
+            }
           }
+        } else {
+          setOffices(officesData);
         }
       } catch {
         setError("Failed to load data");
